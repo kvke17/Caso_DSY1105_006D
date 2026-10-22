@@ -12,12 +12,13 @@ Solución móvil integral para el control de stock, reposición automática, cat
 
 ## 👥 1. Integrantes del Equipo
 
-* **Estudiante 1:** [Nombre y Apellido del Estudiante 1]
-* **Estudiante 2:** [Nombre y Apellido del Estudiante 2]
+* **Estudiante 1:** Jorge Araya
+* **Estudiante 2:** César Adasme
 * **Asignatura:** DSY1105 - Desarrollo de Aplicaciones Móviles
-* **Sección:** [Ej. DSY1105-001D]
+* **Sección:** DSY1105-006D
 * **Sede:** Duoc UC Puente Alto
-* **Docente:** [Nombre del Docente]
+* **Docente:** Vicente Zapata
+* **Repositorio GitHub:** https://github.com/kvke17/Caso_DSY1105_006D
 
 ---
 
@@ -121,7 +122,7 @@ app/src/main/java/com/taller/inventario/
 ### Pasos para Ejecutar
 1. Clonar el repositorio en tu computador:
    ```bash
-   git clone <URL_DEL_REPOSITORIO_GITHUB>
+   git clone https://github.com/kvke17/Caso_DSY1105_006D.git
    ```
 2. Abrir **Android Studio**.
 3. Seleccionar **File ➔ Open** y elegir la carpeta del proyecto.
