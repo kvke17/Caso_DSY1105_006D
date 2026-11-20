@@ -29,7 +29,10 @@ class ProductoViewModel(
     private val _soloBajoStock = MutableStateFlow(false)
 
     init {
-        // Asegura que existan datos precargados si la BD se creó vacía
+        // Carga indicadores económicos externos (mindicador.cl)
+        cargarIndicadores()
+
+        // Asegura que existan datos sincronizados con Spring Boot o precargados en Room si está vacía
         viewModelScope.launch {
             repository.verificarYPrecargarSiVacio()
         }
@@ -193,7 +196,10 @@ class ProductoViewModel(
                 productos = it.productos,
                 searchQuery = _searchQuery.value,
                 filtroCategoria = _categoriaFiltro.value,
-                soloBajoStock = _soloBajoStock.value
+                soloBajoStock = _soloBajoStock.value,
+                valorDolar = it.valorDolar,
+                valorUf = it.valorUf,
+                indicadoresCargando = it.indicadoresCargando
             )
         }
     }
@@ -362,7 +368,7 @@ class ProductoViewModel(
                 estado = estadoCalculado
             )
 
-            repository.insertOrUpdate(entity)
+            repository.insertOrUpdate(entity, isEditing = state.isEditing)
 
             _uiState.update {
                 it.copy(
@@ -418,6 +424,34 @@ class ProductoViewModel(
             onSearchQueryChange(codigo)
         } else {
             onCodigoChange(codigo)
+        }
+    }
+
+    // --- Sincronización Remota y Cotizaciones Externas ---
+
+    fun cargarIndicadores() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(indicadoresCargando = true) }
+            val indicadores = repository.getIndicadoresEconomicos()
+            if (indicadores != null) {
+                _uiState.update { current ->
+                    current.copy(
+                        valorDolar = indicadores.dolar?.valor,
+                        valorUf = indicadores.uf?.valor,
+                        indicadoresCargando = false
+                    )
+                }
+            } else {
+                _uiState.update { it.copy(indicadoresCargando = false) }
+            }
+        }
+    }
+
+    fun sincronizarConBackend() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            repository.sincronizarDesdeRemoto()
+            _uiState.update { it.copy(isLoading = false) }
         }
     }
 

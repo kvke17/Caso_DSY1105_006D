@@ -4,149 +4,233 @@
 [![Android](https://img.shields.io/badge/Platform-Android%2014%2B%20(API%2024--36)-green.svg?logo=android)](https://developer.android.com)
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20M3-4285F4.svg?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 [![Room Database](https://img.shields.io/badge/Storage-Room%202.8.5-orange.svg?logo=sqlite)](https://developer.android.com/training/data-storage/room)
+[![Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot%203.3.5-brightgreen.svg?logo=springboot)](https://spring.io/projects/spring-boot)
+[![Retrofit](https://img.shields.io/badge/Network-Retrofit%202.11.0-blueviolet.svg)](https://square.github.io/retrofit/)
 
 Proyecto desarrollado para la asignatura **DSY1105 - Desarrollo de Aplicaciones Móviles** en **Duoc UC**.  
-Solución móvil integral para el control de stock, reposición automática, catálogo técnico y escaneo QR de repuestos en el **Taller Mecánico San Cristóbal** ubicado en la comuna de **Puente Alto, Santiago de Chile**.
+Solución integral cliente-servidor para el control de inventario, telemetría de stock crítico, reposición de piezas, escaneo QR/barras y cotizaciones de importación en el **Taller Mecánico San Cristóbal**, ubicado en la comuna de **Puente Alto, Santiago de Chile**.
 
 ---
 
 ## 👥 1. Integrantes del Equipo
 
-* **Estudiante 1:** Jorge Araya
-* **Estudiante 2:** César Adasme
+* **Jorge Araya**
+* **César Adasme**
 * **Asignatura:** DSY1105 - Desarrollo de Aplicaciones Móviles
 * **Sección:** DSY1105-006D
-* **Sede:** Duoc UC Puente Alto
-* **Docente:** Vicente Zapata
-* **Repositorio GitHub:** https://github.com/kvke17/Caso_DSY1105_006D
+* **Institución:** Duoc UC Puente Alto
+* **Repositorio GitHub:** [Caso_DSY1105_006D](https://github.com/kvke17/Caso_DSY1105_006D)
 
 ---
 
-## 📱 2. Descripción de la Problemática y Solución
+## 📱 2. Contexto y Problemática
 
-En talleres mecánicos de alta rotación, el control manual o en cuadernos de los repuestos ocasiona quiebres de stock, pérdidas económicas y retrasos en las reparaciones de vehículos de clientes.
+En talleres automotrices con alta afluencia vehicular, la gestión no sistematizada de repuestos e insumos produce quiebres imprevistos de stock, retrasos en entregas de vehículos y falta de visibilidad del capital inmovilizado. Asimismo, los repuestos importados dependen directamente de variaciones cambiarias en el **Dólar observado** y la **Unidad de Fomento (UF)**.
 
-**Esta aplicación resuelve este problema entregando:**
-* **Catálogo de repuestos en tiempo real**: Registro de lubricantes, filtros, frenos, baterías, bujías, suspensión y accesorios.
-* **Telemetría visual de stock**: Barra dinámica con resplandor neón que alerta visualmente cuando un repuesto está próximo a agotarse.
-* **Fórmula de reposición automática**: Sugiere la cantidad exacta a comprar según la regla de seguridad del taller: `maxOf(0, (Stock Mínimo × 2) - Cantidad)`.
-* **Ubicación física en bodega**: Identificación rápida de Zona, Estante y Repisa para el mecánico.
-* **Valorización económica en pesos chilenos (CLP)**: Monitoreo del capital total invertido en repuestos y cálculo automático del margen de ganancia.
-
----
-
-## 🚀 3. Funcionalidades Implementadas
-
-### A. Catálogo y Dashboard Gerencial
-- **2 Tarjetas Maestras de Telemetría**:
-  1. *En Bodega*: Total de repuestos y valorización económica del inventario en CLP.
-  2. *Stock Crítico*: Contador interactivo que al pulsar filtra en un toque los repuestos en alerta de agotamiento.
-- **Buscador Reactivo**: Filtrado instantáneo por nombre, código de parte, marca o proveedor.
-- **Filtros por Categoría**: Selector en pastillas con contadores y colores neón identificadores.
-
-### B. Formularios Validados y Desacoplados (MVVM)
-- Validación de campos requeridos (código único, nombre, marca, categoría, cantidades y precios).
-- Estimador de margen comercial en vivo mientras el usuario digita costo y venta.
-- Limpieza automática de errores en pantalla según el patrón StateFlow.
-
-### C. Animaciones Visuales Fluidas (Rúbrica IE 2.2.2)
-- **Barra de nivel de stock animada**: Transición fluida con `animateFloatAsState` al cargar o filtrar la lista.
-- **Alertas de reposición animadas**: Entrada suave con `AnimatedVisibility(fadeIn() + expandVertically())`.
+**La solución implementada entrega:**
+* **Sincronización Híbrida en Tiempo Real**: Conexión con un microservicio Spring Boot como backend centralizado y persistencia en Room como respaldo local y caché transparente ante cortes de red.
+* **Telemetría visual de stock y reposición automática**: Monitoreo neón de bajo stock y cálculo de la cantidad mínima sugerida: `maxOf(0, (Stock Mínimo × 2) - Cantidad)`.
+* **Cotizaciones de referencia para repuestos importados**: Consumo de la API externa pública de `mindicador.cl` para mostrar el valor del día del Dólar y UF en la cabecera del catálogo.
+* **Trazabilidad física en bodega**: Identificación visual de Zona, Estante y Repisa.
+* **Escáner nativo CameraX**: Lectura instantánea de códigos QR y de barras para búsqueda y registro.
 
 ---
 
-## 📲 4. Acceso a Recursos Nativos del Dispositivo (Rúbrica IE 2.4.1)
+## 🏗️ 3. Arquitectura y Tecnologías
 
-La aplicación integra de forma segura **3 recursos nativos del hardware**:
-
-1. **Cámara Nativa (CameraX + Google ML Kit Barcode)**:
-   - Escaneo en tiempo real de códigos de barra y códigos QR de repuestos con previsualización asistida.
-   - Solicitud segura de permisos en tiempo de ejecución (`android.permission.CAMERA`).
-2. **Telefonía y Marcador Nativo (`Intent.ACTION_DIAL`)**:
-   - Botón directo en cada tarjeta de repuesto para llamar inmediatamente al proveedor asignado vía el marcador nativo del dispositivo.
-3. **Motor Háptico de Vibración Física (`Vibrator API`)**:
-   - Retroalimentación táctil nativa al escanear un código QR con éxito, al confirmar guardado o al eliminar un repuesto (`android.permission.VIBRATE`).
-
----
-
-## 🏗️ 5. Arquitectura y Tecnologías
-
-El proyecto sigue rigurosamente los principios de **Clean Architecture** y directrices oficiales de Google:
+La aplicación implementa los principios de **Clean Architecture** bajo el patrón **MVVM (Model-View-ViewModel)** en Android junto con un microservicio REST en Spring Boot:
 
 ```
-app/src/main/java/com/taller/inventario/
-├── data/
-│   ├── local/
-│   │   ├── AppDatabase.kt          # Room Database Singleton con precarga de 18 repuestos
-│   │   ├── ProductoDao.kt          # Consultas reactivas (Flow, Insert, Delete, Count)
-│   │   └── ProductoEntity.kt       # Entidad Room con reglas de negocio puras
-│   ├── model/
-│   │   └── QrResult.kt             # Modelo de lectura QR
-│   └── repository/
-│       ├── ProductoRepository.kt   # Única fuente de verdad (Single Source of Truth)
-│       └── QrRepository.kt         # Lógica de decodificación QR
-├── ui/
-│   ├── navigation/
-│   │   ├── AppNavigation.kt        # NavHost y enrutamiento Compose
-│   │   └── Screen.kt               # Contrato sellado de rutas seguras
-│   ├── producto/
-│   │   ├── components/
-│   │   │   ├── ProductCard.kt      # Tarjeta con telemetría de stock y botones nativos
-│   │   │   └── StockBadge.kt       # Insignia accesible (Disponible, Bajo Stock, Agotado)
-│   │   ├── ListaProductosScreen.kt # Pantalla principal con dashboard de KPIs y filtros
-│   │   ├── ProductoFormScreen.kt   # Formulario reactivo con cálculo de márgenes
-│   │   ├── ProductoUiState.kt      # Estado inmutable de la interfaz
-│   │   └── ProductoViewModel.kt    # Lógica de negocio, validaciones y StateFlow reactivo
-│   ├── qr/
-│   │   ├── QrScannerScreen.kt      # Pantalla con visor de cámara nativa CameraX
-│   │   └── QrViewModel.kt          # ViewModel para gestión del escaneo QR
-│   └── theme/
-│       ├── Color.kt                # Paleta Dark Neon Automotriz de alto contraste
-│       ├── Theme.kt                # MaterialTheme M3 configurado en modo oscuro
-│       └── Type.kt                 # Escala tipográfica optimizada para lectura en taller
-└── utils/
-    ├── CameraPermissionHelper.kt   # Verificación centralizada de permisos
-    ├── NativeDeviceHelper.kt       # Llamadas telefónicas nativas y vibrador háptico
-    └── QrScanner.kt                # Implementación nativa CameraX + ML Kit
+Caso_DSY1105_006D-main/
+├── backend/                                   # Microservicio Spring Boot
+│   ├── src/main/java/com/taller/inventario/backend/
+│   │   ├── config/DataInitializer.java        # Precarga inicial en H2
+│   │   ├── controller/ProductoController.java # Endpoints RESTful CRUD
+│   │   ├── model/Producto.java                # Entidad JPA
+│   │   ├── repository/ProductoRepository.java # JpaRepository
+│   │   └── BackendApplication.java            # Entry point Spring Boot
+│   ├── src/main/resources/application.properties # Puerto 8080 y H2 file DB
+│   ├── data/inventario_db.mv.db               # Persistencia real en disco
+│   ├── pom.xml                                # Dependencias Maven
+│   └── mvnw / mvnw.cmd                        # Maven Wrapper independiente
+│
+└── app/src/main/java/com/taller/inventario/   # Aplicación Android Jetpack Compose
+    ├── data/
+    │   ├── local/                             # Persistencia Local (Room)
+    │   │   ├── AppDatabase.kt                 # Room Database con respaldo offline
+    │   │   ├── ProductoDao.kt                 # DAO reactivo con Flow
+    │   │   └── ProductoEntity.kt              # Entidad con lógica de negocio
+    │   ├── remote/                            # Capa de Red (Retrofit)
+    │   │   ├── InventarioApiService.kt        # Cliente REST para Spring Boot (10.0.2.2:8080)
+    │   │   └── ExternalApiService.kt          # Cliente REST para mindicador.cl (UF / Dólar)
+    │   └── repository/
+    │       └── ProductoRepository.kt          # Single Source of Truth híbrido
+    ├── ui/
+    │   ├── navigation/AppNavigation.kt        # Grafo de navegación Compose
+    │   ├── producto/                          # Vistas y ViewModel
+    │   │   ├── ListaProductosScreen.kt        # Catálogo con dashboard e indicadores
+    │   │   ├── ProductoFormScreen.kt          # Formulario con validaciones estrictas
+    │   │   ├── ProductoUiState.kt             # Estado inmutable de UI
+    │   │   └── ProductoViewModel.kt           # Orquestador reactivo MVVM
+    │   ├── qr/QrScannerScreen.kt              # Visor nativo con CameraX y ML Kit
+    │   └── theme/                             # Sistema de diseño Cyberpunk Neón
+    └── utils/                                 # Helpers nativos (permisos, vibración, llamadas)
+```
+
+### Tecnologías Clave
+* **Cliente Móvil**: Kotlin 2.2.10, Jetpack Compose Material 3, Android SDK 36 (minSdk 24), Room Database 2.8.5, Retrofit 2.11.0, Gson, OkHttp Logging Interceptor, CameraX 1.4.2, Google ML Kit Barcode Scanning.
+* **Microservicio Backend**: Java 17/21, Spring Boot 3.3.5, Spring Data JPA, Spring Web MVC, Base de datos H2 en modo archivo persistente (`./backend/data/inventario_db`), Maven Wrapper.
+* **API Externa**: `https://mindicador.cl/api/` (datos macroeconómicos oficiales de Chile).
+* **Pruebas Unitarias**: JUnit 4, MockK 1.13.13, Kotlinx Coroutines Test 1.9.0.
+
+---
+
+## 📡 4. Tabla de Endpoints y Ejemplos de Petición
+
+### A. Endpoints del Microservicio Spring Boot (`http://localhost:8080` / `http://10.0.2.2:8080`)
+
+| Método | Endpoint | Descripción | Código Éxito |
+|---|---|---|---|
+| `GET` | `/api/productos` | Listar todos los repuestos del taller | `200 OK` |
+| `GET` | `/api/productos/{id}` | Obtener detalle de un repuesto por su código | `200 OK` / `404 Not Found` |
+| `POST` | `/api/productos` | Registrar nuevo repuesto | `201 Created` / `400 Bad Request` |
+| `PUT` | `/api/productos/{id}` | Actualizar datos de un repuesto existente | `200 OK` |
+| `DELETE` | `/api/productos/{id}` | Eliminar repuesto por su código | `204 No Content` / `404 Not Found` |
+
+#### Ejemplo JSON de Repuesto (`GET / POST / PUT`):
+```json
+{
+  "codigo": "ACE-CAST-5W30",
+  "nombre": "Aceite Sintético Edge 5W-30 4L",
+  "marca": "Castrol",
+  "categoria": "Lubricantes",
+  "unidadMedida": "Bidón",
+  "cantidad": 16,
+  "stockMinimo": 6,
+  "precioCompra": 28000.0,
+  "precioVenta": 39990.0,
+  "ubicacionZona": "A",
+  "ubicacionEstante": "1",
+  "ubicacionRepisa": "A",
+  "proveedorNombre": "Castrol Chile",
+  "estado": "DISPONIBLE"
+}
+```
+
+#### Consola Web H2 Database:
+* **URL:** `http://localhost:8080/h2-console`
+* **JDBC URL:** `jdbc:h2:file:./data/inventario_db`
+* **Usuario:** `sa`
+* **Contraseña:** *(vacía)*
+
+---
+
+### B. Endpoint de la API Externa Independiente (`https://mindicador.cl/api/`)
+
+| Método | Endpoint | Descripción | Datos Consumidos |
+|---|---|---|---|
+| `GET` | `https://mindicador.cl/api` | Consulta en tiempo real de indicadores de Chile | Dólar Observado (`dolar.valor`) y Unidad de Fomento (`uf.valor`) |
+
+#### Ejemplo de Respuesta JSON de `mindicador.cl`:
+```json
+{
+  "version": "1.7.0",
+  "autor": "mindicador.cl",
+  "fecha": "2026-11-20T11:00:00.000Z",
+  "uf": {
+    "codigo": "uf",
+    "nombre": "Unidad de fomento (UF)",
+    "unidad_medida": "Pesos",
+    "fecha": "2026-11-20T03:00:00.000Z",
+    "valor": 41371.05
+  },
+  "dolar": {
+    "codigo": "dolar",
+    "nombre": "Dólar observado",
+    "unidad_medida": "Pesos",
+    "fecha": "2026-11-20T03:00:00.000Z",
+    "valor": 1008.79
+  }
+}
 ```
 
 ---
 
-## ⚙️ 6. Requisitos y Pasos de Ejecución
+## 💻 5. Comandos de Ejecución y Compilación
 
-### Requisitos Previos
-* **Android Studio**: Ladybug (2024.2+) o Meerkat / Jellyfish.
-* **JDK**: OpenJDK 17 o 21 (incluido en Android Studio).
-* **Dispositivo / Emulador**: Android 7.0 (API 24) o superior.
+### Paso 1: Levantar el Microservicio Backend (Spring Boot)
+Abrir una terminal en el directorio `./backend/` y ejecutar:
 
-### Pasos para Ejecutar
-1. Clonar el repositorio en tu computador:
-   ```bash
-   git clone https://github.com/kvke17/Caso_DSY1105_006D.git
-   ```
-2. Abrir **Android Studio**.
-3. Seleccionar **File ➔ Open** y elegir la carpeta del proyecto.
-4. Esperar que **Gradle Sync** descargue las dependencias.
-5. Iniciar un emulador Android (ej. *Medium Phone API 34 o superior*) o conectar un teléfono físico con depuración USB activada.
-6. Presionar el botón verde de **Run** (**▶️** o `Shift + F10`).
+* **En Windows (PowerShell / CMD):**
+  ```powershell
+  cd backend
+  .\mvnw.cmd spring-boot:run
+  ```
 
-### Generación del archivo APK
-Para generar el instalador en cualquier momento desde terminal:
-```bash
-./gradlew assembleDebug
-```
-El archivo generado se ubicará en:
-`app/build/outputs/apk/debug/app-debug.apk`
+* **En Linux / macOS:**
+  ```bash
+  cd backend
+  ./mvnw spring-boot:run
+  ```
+
+El servicio iniciará en el puerto `8080` y creará automáticamente la base de datos persistente en `./backend/data/inventario_db.mv.db`.
 
 ---
 
-## 📋 7. Planificación y Gestión en Trello
+### Paso 2: Ejecutar Pruebas Unitarias de Android (100% Cobertura Lógica)
+Desde la carpeta raíz del proyecto:
 
-El desarrollo del proyecto se planificó colaborativamente siguiendo metodología ágil:
+* **En Windows:**
+  ```powershell
+  .\gradlew.bat testDebugUnitTest
+  ```
 
-* **Tablero Trello del Proyecto:** [Enlace a tu tablero público de Trello]
-* **Columnas de Seguimiento:**
-  * 📌 *Backlog de Requerimientos*: Historias de usuario del taller automotriz.
-  * ⚙️ *En Progreso (Sprints)*: Implementación de Room, Compose UI, CameraX y Native Calls.
-  * 🧪 *En Pruebas / QA*: Validación de pruebas unitarias y feedback de stock.
-  * ✅ *Terminado / Entregado*: Versión final lista para Evaluación Parcial 2.
+* **En Linux / macOS:**
+  ```bash
+  ./gradlew testDebugUnitTest
+  ```
+
+Las 34 pruebas unitarias (de `ProductoEntityTest`, `ProductoRepositoryTest` y `ProductoViewModelTest`) se ejecutan y validan en verde.
+
+---
+
+### Paso 3: Compilar y Generar el APK de la Aplicación Móvil
+
+* **Generar APK Debug:**
+  ```bash
+  ./gradlew assembleDebug
+  ```
+  El instalador se generará en:  
+  `app/build/outputs/apk/debug/app-debug.apk`
+
+* **Generar APK Release:**
+  ```bash
+  ./gradlew assembleRelease
+  ```
+  El instalador se generará en:  
+  `app/build/outputs/apk/release/app-release-unsigned.apk` (o firmado con Keystore).
+
+---
+
+## 🧪 6. Resumen de Pruebas Unitarias Implementadas
+
+Se implementaron suites exhaustivas con **MockK** y **Coroutines Test**:
+1. **`ProductoEntityTest`**: Reglas puras de negocio (cálculo de reposición automática `(stockMinimo * 2) - cantidad`, estados `DISPONIBLE`, `BAJO_STOCK`, `AGOTADO` y formato de ubicación física).
+2. **`ProductoRepositoryTest`**:
+   - Operaciones CRUD híbridas (Room local + Spring Boot remoto).
+   - Respaldo automático en Room ante fallos de conectividad o apagado del backend.
+   - Sincronización remota (`sincronizarDesdeRemoto()`).
+   - Detección de repuestos con stock crítico.
+   - Consumo y deserialización de la API externa `mindicador.cl` con control de excepciones.
+3. **`ProductoViewModelTest`**:
+   - Flujo reactivo StateFlow con combinación de filtros y búsqueda.
+   - Transiciones automáticas de stock al ingresar cantidades.
+   - Validación estricta de formularios (campos vacíos, cantidades positivas, márgenes de ganancia venta >= costo).
+   - Rechazo de códigos duplicados en creación.
+   - Carga reactiva de cotizaciones Dólar/UF.
+   - Flujo de confirmación y eliminación de productos.
+
+---
+
+## 🔏 ## Evidencia de APK Firmado y Keystore (.jks)
+<!-- Sección reservada para adjuntar captura de pantalla del APK firmado y archivo keystore (.jks) -->

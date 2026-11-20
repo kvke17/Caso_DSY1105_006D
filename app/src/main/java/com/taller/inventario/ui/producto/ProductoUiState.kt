@@ -43,6 +43,11 @@ data class ProductoUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
 
+    // Indicadores económicos externos (mindicador.cl)
+    val valorDolar: Double? = null,
+    val valorUf: Double? = null,
+    val indicadoresCargando: Boolean = false,
+
     // Colecciones y selección
     val productos: List<ProductoEntity> = emptyList(),
     val productoAEliminar: ProductoEntity? = null,

@@ -175,6 +175,16 @@ fun ListaProductosScreen(
                 .padding(innerPadding)
         ) {
             // ==========================================
+            // 0. INDICADORES ECONÓMICOS EXTERNOS (Dólar / UF para Repuestos Importados)
+            // ==========================================
+            IndicadoresEconomicosBar(
+                valorDolar = uiState.valorDolar,
+                valorUf = uiState.valorUf,
+                cargando = uiState.indicadoresCargando,
+                onRefresh = { viewModel.cargarIndicadores() }
+            )
+
+            // ==========================================
             // 1. DASHBOARD ORDENADO (2 Tarjetas Maestras Equilibradas)
             // ==========================================
             ConsolidatedDashboard(
@@ -643,3 +653,115 @@ private fun EmptyInventoryState(
         }
     }
 }
+
+/**
+ * Barra superior compacta para indicadores económicos de mindicador.cl (Dólar y UF del día).
+ * Provee valor de referencia para repuestos importados sin alterar el diseño existente.
+ */
+@Composable
+private fun IndicadoresEconomicosBar(
+    valorDolar: Double?,
+    valorUf: Double?,
+    cargando: Boolean,
+    onRefresh: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
+        border = BorderStroke(1.dp, NeonCyan.copy(alpha = 0.35f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = NeonGreen.copy(alpha = 0.15f),
+                    border = BorderStroke(1.dp, NeonGreen.copy(alpha = 0.5f)),
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Rounded.MonetizationOn,
+                            contentDescription = null,
+                            tint = NeonGreen,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+
+                val dolarTexto = valorDolar?.let { String.format(Locale.forLanguageTag("es-CL"), "$%,.2f", it) } ?: "Consultando..."
+                val ufTexto = valorUf?.let { String.format(Locale.forLanguageTag("es-CL"), "$%,.2f", it) } ?: "Consultando..."
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "USD: ",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = NeonCyan,
+                                fontSize = 11.sp
+                            )
+                        )
+                        Text(
+                            text = dolarTexto,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.White,
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
+
+                    Text(
+                        text = "•",
+                        color = MaterialTheme.colorScheme.outline,
+                        fontSize = 11.sp
+                    )
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "UF: ",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = NeonOrange,
+                                fontSize = 11.sp
+                            )
+                        )
+                        Text(
+                            text = ufTexto,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.White,
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
+                }
+            }
+
+            Text(
+                text = "mindicador.cl",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+            )
+        }
+    }
+}
+
