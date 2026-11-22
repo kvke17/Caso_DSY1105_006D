@@ -14,7 +14,7 @@
 .cxx
 local.properties
 .kotlin
-*.apk
+# *.apk y *.jks permitidos para entrega de Evaluacion Parcial 4
 *.tmp
 .idea/
 app/build/
